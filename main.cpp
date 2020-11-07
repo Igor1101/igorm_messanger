@@ -4,33 +4,58 @@
 #include <QDebug>
 #include "server.h"
 #include "client.h"
-using namespace std;
-void server()
+#include "defs.h"
+
+void server(quint16 port)
 {
     static msgServer serv;
+    serv.set_port(port);
+    serv.init();
 }
 
-void client()
+void client(quint16 port)
 {
     static Client cl;
-    cl.serv_connect();
+    cl.set_port(port);
+    cl.init();
 }
 int main(int argc, char *argv[])
 {
+    // arg1: "server" or "client"
+    // arg2: username
+    // arg3: port [optional]
+    // arg4: addr [optional]
     QString type;
+    QString username;
+    QString port_s;
+    quint16 port = PORT_NUM_DEF;
     if(argc >=  2) {
         type = QString(argv[1]);
     }
+    if(argc >=  3) {
+        username = QString(argv[2]);
+    }
+    if(argc >=  4) {
+        port_s = QString(argv[3]);
+        port = port_s.toUInt();
+    }
+
+    // force to ignore QT command line params
     argc = 1;
     QCoreApplication a(argc, argv);
     // here select server or client
      if(type == "server") {
-        server();
+        server(port);
     } else if(type == "client") {
-        client();
+        client(port);
     } else {
-        qWarning() << QString::fromUtf8("Некоректний командний рядок");
-        server();
+        QWARN << UKR("Некоректний командний рядок");
+        QWARN << UKR("коректний: ");
+        QWARN << UKR("1: \"server\", \"client\"");
+        QWARN << UKR("2: username");
+        QWARN << UKR("3: port [optional]");
+        QWARN << UKR("4: addr [optional]");
+        exit(-1);
     }
     return a.exec();
 }
