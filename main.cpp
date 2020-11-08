@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
     QString port_s;
     quint16 port = PORT_NUM_DEF;
     QString host = ADDR_DEFAULT;
+    QDEB << "argc:"<< argc;
     if(argc >=  2) {
         type = QString(argv[1]);
     }
@@ -40,7 +41,9 @@ int main(int argc, char *argv[])
     }
     if(argc >=  4) {
         port_s = QString(argv[3]);
-        port = port_s.toUInt();
+	QTextStream ts(&port_s);
+	ts >> port;
+	QDEB << port;
     }
 
     if(argc >=  5) {
