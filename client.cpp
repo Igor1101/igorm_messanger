@@ -2,6 +2,7 @@
 #include <QTcpSocket>
 #include <QDebug>
 #include <termios.h>
+#include <ncurses.h>
 #include "ConsoleReader.h"
 #include "client.h"
 #include "defs.h"
@@ -17,15 +18,19 @@ void Client::serv_connect()
     connect(socket, SIGNAL(disconnected()),this, SLOT(disconnected()));
     connect(socket, SIGNAL(bytesWritten(qint64)),this, SLOT(bytesWritten(qint64)));
     connect(socket, SIGNAL(readyRead()),this, SLOT(readyRead()));
-    socket->connectToHost("127.0.0.1", port);
-    qWarning() << QString::fromUtf8("приєднуємось...");
+    socket->connectToHost(ADDR_DEFAULT, port);
+    QINFO << UKR("приєднуємось...");
 }
 
 void Client::connected()
 {
-    qWarning() << QString::fromUtf8("приєднано до сервера");
-    // setup this connection
+    QINFO << UKR("приєднано до сервера");
+    // setup this connection+write name
     info_type_t info = CLIENT_INFO;
+    QByteArray arr;
+    arr += (quint8)info;
+    arr += username.toLocal8Bit();
+    socket->write(arr);
 }
 
 void Client::disconnected()
@@ -36,24 +41,44 @@ void Client::disconnected()
 void Client::readyRead()
 {
     // force read
-    qDebug() << "READ:";
-    qDebug() << socket->readAll();
+    //QDEB << "READ:";
+    QINFO << socket->readAll();
 }
 
 void Client::bytesWritten(qint64 bytes)
 {
-    qDebug() << "Written " << bytes << " bytes";
+    //QDEB << "Written " << bytes << " bytes";
 }
 
 void Client::init()
 {
-    serv_connect();
     ConsoleReader *consoleReader = new ConsoleReader();
-    connect (consoleReader, SIGNAL (KeyPressed(char)), this, SLOT(OnConsoleKeyPressed(char)));
     consoleReader->start();
+    serv_connect();
+    connect (consoleReader, SIGNAL (KeyPressed(char)), this, SLOT(OnConsoleKeyPressed(char)));
 }
 
 void Client::OnConsoleKeyPressed(char ch)
 {
-
+    int y, x;            // to store where you are
+    switch (ch) {
+    case '\r':
+        socket->write(data_snd.toLocal8Bit());
+        data_snd = "";
+        //getyx(stdscr, y, x); // save current pos
+        //move(LINES-1, 0);          // move to begining of line
+        //wclrtoeol(window);          // clear line
+        //move(y, x);          // move back to where you were
+        //QINFO << UKR("відправлено");
+        //refresh();
+        break;
+    default:
+        data_snd += QChar(ch);
+        attron(COLOR_PAIR(1));
+        getyx(stdscr, y, x); // save current pos
+        move(y, 0);          // move back to where you were
+        wprintw( window,  "%s", data_snd.toStdString().c_str());
+        refresh();
+        break;
+    }
 }

@@ -26,8 +26,32 @@ void msgServer::newConnection()
 {
     QINFO << UKR("нове з'єднання");
     QTcpSocket * socket = qtcp_serv->nextPendingConnection();
-    socket->write("IGORS_CLIENT");
-    socket->flush();
-    socket->waitForBytesWritten(3000);
-    socket->close();
+    int idusersocs=socket->socketDescriptor();
+    clients[idusersocs]=socket;
+    // append signal from this user
+    connect(clients[idusersocs],SIGNAL(readyRead()),this, SLOT(readClient()));
+}
+
+void msgServer::readClient()
+{
+    QTcpSocket* clientSocket = (QTcpSocket*)sender();
+    int idusersocs=clientSocket->socketDescriptor();
+    QByteArray arr = clientSocket->readAll();
+    if(arr.at(0) == CLIENT_INFO) {
+        // client added some data
+        client_info_t* cinfo = (client_info_t*)(arr.data()+1);
+        clients_names[idusersocs] = QString(cinfo->usrname);
+        QINFO << UKR("прийшов користувач:") << cinfo->usrname;
+        QString res = "Користувач " + clients_names[idusersocs] + " приєднався";
+        foreach(int i,clients.keys()){
+            clients[i]->write(res.toLocal8Bit());
+        }
+        return;
+    }
+    QString res = clients_names[idusersocs] + ": " + QString(arr);
+    QINFO << res;
+    QByteArray arr_form = res.toLocal8Bit();
+    foreach(int i,clients.keys()){
+        clients[i]->write(arr_form);
+    }
 }

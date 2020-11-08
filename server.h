@@ -21,11 +21,13 @@ public slots:
     {
         this->port = port;
     }
+    void readClient(void);
 private:
     quint16 port ;
     bool status;
     QTcpServer*qtcp_serv;
-
+    QMap<int,QTcpSocket *> clients;
+    QMap<int,QString> clients_names;
 };
 
 #endif // SERVER_H

@@ -19,6 +19,14 @@ public slots:
     {
         this->port = port;
     }
+    void set_host(QString host)
+    {
+        this->host = host;
+    }
+    void set_username(QString username)
+    {
+        this->username = username;
+    }
     void init();
     void connected();
     void disconnected();
@@ -26,7 +34,9 @@ public slots:
     void readyRead();
     void OnConsoleKeyPressed(char ch);
 private:
-    QString data_snd;
+    QString username;
+    QString host;
+    QString data_snd = "";
     quint16 port;
     QTcpSocket *socket;
 };

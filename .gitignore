@@ -70,4 +70,10 @@ Thumbs.db
 # --------
 *.dll
 *.exe
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+igorm_messanger
+igorm_messanger_autogen/
+
 
