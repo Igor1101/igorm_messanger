@@ -18,8 +18,8 @@ void Client::serv_connect()
     connect(socket, SIGNAL(disconnected()),this, SLOT(disconnected()));
     connect(socket, SIGNAL(bytesWritten(qint64)),this, SLOT(bytesWritten(qint64)));
     connect(socket, SIGNAL(readyRead()),this, SLOT(readyRead()));
-    socket->connectToHost(ADDR_DEFAULT, port);
-    QINFO << UKR("приєднуємось...");
+    socket->connectToHost(host, port);
+    QINFO << UKR("порт:") << port << UKR(" ,адреса:") << host << UKR(" ,приєднуємось...");
 }
 
 void Client::connected()
